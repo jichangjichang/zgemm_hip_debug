@@ -1115,7 +1115,7 @@ bool benchmarkAllSolutionsForSize(
           }
         } // compare loop
     std::cout << "printIdx = "  << printIdx << std::endl;
-    if(printIdx > 0){
+    if(printIdx >= 0){
 
     std::cout << "[A Matrix] "  << printIdx << std::endl;
      dump_matrix(initialA, lda, 16, lda);

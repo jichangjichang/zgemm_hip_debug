@@ -137,11 +137,7 @@ TensileStatus Cijk_Ailk_Bjlk_ZB_MT32x48x8_SE_(
       hipEventRecord(inputEvents[enqueueIdx], stream );
     try {
       kernelsLaunched++;
-  std::cout << "sizeI sizeJ sizeK sizeL" << std::endl;
-  std::cout <<  sizes[kernelIdx][enqueueIdx][0]  << std::endl;
-  std::cout <<  sizes[kernelIdx][enqueueIdx][1]  << std::endl;
-  std::cout <<  sizes[kernelIdx][enqueueIdx][2]  << std::endl;
-  std::cout <<  sizes[kernelIdx][enqueueIdx][3]  << std::endl;
+  std::cout << "sizeI " << sizes[kernelIdx][enqueueIdx][0]  << std::endl;
       hipLaunchKernelGGL(
         HIP_KERNEL_NAME(Cijk_Ailk_Bjlk_ZB_MT32x48x8_SE_K1),
         dim3(globalWorkSize[kernelIdx][0], globalWorkSize[kernelIdx][1], globalWorkSize[kernelIdx][2]),
