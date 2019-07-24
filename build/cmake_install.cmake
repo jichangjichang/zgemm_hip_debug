@@ -1,4 +1,4 @@
-# Install script for directory: /root/zgemm_hip_error_debug/source
+# Install script for directory: ../source
 
 # Set the install prefix
 IF(NOT DEFINED CMAKE_INSTALL_PREFIX)
