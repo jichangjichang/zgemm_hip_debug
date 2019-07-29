@@ -289,7 +289,7 @@ __global__ void Cijk_Ailk_Bjlk_ZB_MT32x48x8_SE_K1(
   /* Allocate Resources                     */
   /******************************************/
 
-  unsigned int serial = hc_get_workitem_id(0);
+  unsigned int serial = hipThreadIdx_x;
   unsigned int sgId = serial / (SG0I*SG1J);
 #define SCALAR_ZERO (TensileComplexDouble)(0)
 #define SCALAR_OOB_DATA SCALAR_ZERO
@@ -357,10 +357,10 @@ __global__ void Cijk_Ailk_Bjlk_ZB_MT32x48x8_SE_K1(
 
   /* global read addresses: work-group */
 
-  unsigned int wg0I = hc_get_group_id(0);
-  unsigned int wg1J = hc_get_group_id(1);
-  unsigned int nwg0I = hc_get_num_groups(0);
-  unsigned int nwg1J = hc_get_num_groups(1);
+  unsigned int wg0I = hipBlockIdx_x ;
+  unsigned int wg1J = hipBlockIdx_y ;
+  unsigned int nwg0I = hipGridDim_x ;
+  unsigned int nwg1J = hipGridDim_y ;
 
 
   /* global read addresses: tile offset assignment a */
@@ -385,7 +385,7 @@ __global__ void Cijk_Ailk_Bjlk_ZB_MT32x48x8_SE_K1(
 
   /* global read addresses: other free assignments */
 
-  unsigned int wgK = ( hc_get_group_id(2) ) % sizeK;
+  unsigned int wgK = ( hipBlockIdx_z ) % sizeK;
 
 
   /* global read addresses: tile offsets a */
