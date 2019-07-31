@@ -7,25 +7,19 @@
 // hip header file
 #include "hip/hip_runtime.h"
 
-
-
 #define NUM (16 * 1)
-
 
 template <typename t>
 struct tensile_complex
 {
     t x;
     t y;
-
     __host__ __device__ tensile_complex() = default;
-
     constexpr __host__ __device__ tensile_complex(t real, t imag = 0)
         : x{real}
         , y{imag}
     {
     }
-
     template <typename u, typename std::enable_if<std::is_arithmetic<u>{}>::type* = nullptr>
     tensile_complex<t>& operator=(const u a)
     {
@@ -34,7 +28,6 @@ struct tensile_complex
         return (*this);
     }
 };
-
 template <typename T>
 inline std::ostream& operator<<(std::ostream& os, const tensile_complex<T>& data)
 {
@@ -52,19 +45,6 @@ inline std::ostream& operator<<(std::ostream& os, const tensile_complex<T>& data
 
     return os;
 }
-
-template <typename T>
-constexpr __host__ __device__ tensile_complex<T> operator+(tensile_complex<T> data)
-{
-    return data;
-}
-
-template <typename T>
-constexpr __host__ __device__ tensile_complex<T> operator-(tensile_complex<T> data)
-{
-    return tensile_complex<T>{-data.x, -data.y};
-}
-
 template <typename T>
 constexpr __host__ __device__ tensile_complex<T> operator+(tensile_complex<T> a,
                                                            tensile_complex<T> b)
@@ -80,59 +60,16 @@ constexpr __host__ __device__ tensile_complex<T> operator-(tensile_complex<T> a,
 }
 
 template <typename T>
-constexpr __host__ __device__ tensile_complex<T> operator*(tensile_complex<T> a,
-                                                           tensile_complex<T> b)
-{
-    return tensile_complex<T>{a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x};
-}
-
-template <typename T>
-constexpr __host__ __device__ tensile_complex<T> operator/(tensile_complex<T> a,
-                                                           tensile_complex<T> b)
-{
-    return tensile_complex<T>{(a.x * b.x + a.y * b.y) / (b.x * b.x + b.y * b.y),
-                              (a.y * b.x - a.x * b.y) / (b.x * b.x + b.y * b.y)};
-}
-
-template <typename T>
-constexpr __host__ __device__ tensile_complex<T>& operator+=(tensile_complex<T>& a,
-                                                             tensile_complex<T>  b)
-{
-    return (a = a + b);
-}
-
-template <typename T>
-constexpr __host__ __device__ tensile_complex<T>& operator-=(tensile_complex<T>& a,
-                                                             tensile_complex<T>  b)
-{
-    return (a = a - b);
-}
-
-template <typename T>
-constexpr __host__ __device__ tensile_complex<T>& operator*=(tensile_complex<T>& a,
-                                                             tensile_complex<T>  b)
-{
-    return (a = a * b);
-}
-
-template <typename T>
-constexpr __host__ __device__ tensile_complex<T>& operator/=(tensile_complex<T>& a,
-                                                             tensile_complex<T>  b)
-{
-    return (a = a / b);
-}
-template <typename T>
 constexpr __host__ __device__ bool operator==(tensile_complex<T>& a, tensile_complex<T>  b)
 {
     return (a.x == b.x ) && (a.y == b.y);
 }
 
 
-using tensile_float_complex = tensile_complex<float>;
 using tensile_double_complex = tensile_complex<double>;
-
 #define TensileComplexFloat tensile_float_complex
 #define TensileComplexDouble tensile_double_complex
+
 // ==================================== Kernel start ===========================================
 
 /* tile parameters */
@@ -1021,52 +958,7 @@ __global__ void Cijk_Ailk_Bjlk_ZB_MT32x48x8_SE_K1(
 
   __syncthreads(); //
 
-
-  /* tail loop: macs */
-
-  while (numIterL-- > 0) {
-
-
-    /* local read a */
-
-    rA[0*VECTOR_WIDTH+0] = localReadA[0*SG0I*VECTOR_WIDTH + 0]; 
-    rA[1*VECTOR_WIDTH+0] = localReadA[1*SG0I*VECTOR_WIDTH + 0]; 
-    rA[2*VECTOR_WIDTH+0] = localReadA[2*SG0I*VECTOR_WIDTH + 0]; 
-    rA[3*VECTOR_WIDTH+0] = localReadA[3*SG0I*VECTOR_WIDTH + 0]; 
-
-
-    /* local read b */
-
-    rB[0*VECTOR_WIDTH+0] = localReadB[0*SG1J*VECTOR_WIDTH + 0]; 
-    rB[1*VECTOR_WIDTH+0] = localReadB[1*SG1J*VECTOR_WIDTH + 0]; 
-    rB[2*VECTOR_WIDTH+0] = localReadB[2*SG1J*VECTOR_WIDTH + 0]; 
-    rB[3*VECTOR_WIDTH+0] = localReadB[3*SG1J*VECTOR_WIDTH + 0]; 
-    rB[4*VECTOR_WIDTH+0] = localReadB[4*SG1J*VECTOR_WIDTH + 0]; 
-    rB[5*VECTOR_WIDTH+0] = localReadB[5*SG1J*VECTOR_WIDTH + 0]; 
-
-
-    /* local read inc a */
-
-    localReadA += LOCAL_SPLITU*(MT0I+PAD);
-
-
-    /* local read inc b */
-
-    localReadB += LOCAL_SPLITU*(MT1J+PAD);
-
-
-    MAC_4x6
-
-  }
-
-
-
   double type_mac_tmp;
-
-  if(serial > 0) return;
-  if(wg0I > 0) return;
-  if(wg1J > 0) return;
-  if(wgK > 0) return;
 
   /* not-LocalSplitU: global write indices */
 
@@ -1225,51 +1117,6 @@ __global__ void Cijk_Ailk_Bjlk_ZB_MT32x48x8_SE_K1(
   if (flattenedGlobalC0 + 3*SG0I*VECTOR_WIDTH < size0I) {  if (flattenedGlobalC1 + 5*SG1J*VECTOR_WIDTH < size1J) {  TYPE_MAC_WRITE( D[ GLOBAL_D( (uint64_t) globalC0I, (uint64_t) globalC1J, (uint64_t) globalCK) ], C[ GLOBAL_C( (uint64_t) globalC0I, (uint64_t) globalC1J, (uint64_t) globalCK) ], alpha, rC[3*VECTOR_WIDTH+0 + (5*VECTOR_WIDTH+0)*TT0I], beta) } }
 
 }
-
-#undef UNROLL
-#undef LOCAL_SPLITU
-#undef LOCAL_DEPTHU
-#undef SG0I
-#undef SG1J
-#undef TT0I
-#undef TT1J
-#undef MT0I
-#undef MT1J
-#undef NLCA
-#undef NLCB
-#undef NLPA
-#undef NLPB
-#undef LSCA
-#undef LSPA
-#undef LSCB
-#undef LSPB
-#undef GLOBAL_C
-#undef GLOBAL_OFFSET_A
-#undef GLOBAL_OFFSET_B
-//#undef DATA_TYPE
-#undef DEST_DATA_TYPE
-#undef COMPUTE_DATA_TYPE
-#undef LDS_OFFSET_B
-#undef LDS_OFFSET_BLK
-#undef LDS_NUM_ELEMENTS
-#undef NUM_THREADS
-#undef WORK_GROUP_MAPPING
-#undef VECTOR_WIDTH
-#undef GLOBAL_LOAD_VECTOR_WIDTH_A
-#undef GLOBAL_LOAD_VECTOR_WIDTH_B
-#undef GLOBAL_WRITE_VECTOR_WIDTH
-#undef MAC
-#undef TYPE_MAC
-#undef TYPE_MAC_WRITE
-#undef GLOBAL_SPLITU
-#undef SCALAR_ZERO
-#undef SCALAR_OOB_DATA
-#undef MAC_4x6
-#undef strideD0I
-#undef strideC0I
-#undef strideA0I
-#undef strideB1J
-
 // ==================================== Kernel end ===========================================
 
 int main() {
