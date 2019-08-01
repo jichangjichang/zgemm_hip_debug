@@ -1162,11 +1162,6 @@ int main() {
       std::cout << cpu_B[i] << ",";
     std::cout << std::endl;
 
-    std::cout << " C Matrix: ";
-    for (i = 0; i < NUM; i++)
-      std::cout << cpu_C[i] << ",";
-    std::cout << std::endl;
-
     alpha = (DATA_TYPE) 1.0f;
     beta = (DATA_TYPE) 0;
 
@@ -1215,13 +1210,12 @@ int main() {
     hipMemcpy(cpu_final, gpu_C, NUM * sizeof(DATA_TYPE), hipMemcpyDeviceToHost);
 
     // verify the results
-    std::cout << " Output Matrix: ";
-    for (i = 0; i < NUM; i++)
-      std::cout << cpu_final[i] << ",";
-    std::cout << std::endl;
 
     std::cout << "Result = " << cpu_final[0] << std::endl;
-
+    if(cpu_final[0].x == 16)
+      std::cout << "PASS! " << std::endl;
+    else
+      std::cout << "FAILED! " << std::endl;
     // free the resources on device side
     hipFree(gpu_A);
     hipFree(gpu_B);
